@@ -56,16 +56,18 @@ def crps_ensemble(fcst,obs):
     o = np.nanmean(beta, axis=0)/(np.nanmean(alpha, axis=0) + np.nanmean(beta, axis=0))
     o[0] = np.sum(left_outliers)/n
     o[-1] = np.sum(right_outliers)/n
-    if o[0] != 0: g[0] = np.nanmean(beta[:,1])/o[0]
+    if o[0] != 0: g[0] = np.nanmean(beta[:,0])/o[0]
     if o[-1] != 1: g[-1] = np.nanmean(alpha[:,-1])/(1-o[-1])
+    #if (O(end) ~= 1) G(end) = nanmean(alpha(:,end))/(1-O(end));end
 
-    rel = np.sum(g*(o-pi)**2)
-    crps_pot = np.sum(g*o*(1-o))
-    unc = 0
-    for i in np.arange(1,n):
-        for j in np.arange(i):
-            unc = unc + np.abs(obs.iloc[i].values - obs.iloc[j].values)/(n**2)
+    rel = np.sum(g*(o-pi)**2) # Reliability
+    crps_pot = np.sum(g*o*(1-o)) # CRPSpot = Uncertainty - Resolution
 
-    res = unc - crps_pot
+    # Compute Uncertainty with vectorised code
+    X = obs.to_numpy()          # shape (n, d)
+    diff = np.abs(X[:, None, :] - X[None, :, :])  # shape (n, n, d)
+    unc = diff[np.tril_indices(n, k=-1)].sum() / (n**2) # # keep only lower triangle (j < i)
+
+    res = unc - crps_pot # Resolution
 
     return mean_crps, rel, res, unc, crps
