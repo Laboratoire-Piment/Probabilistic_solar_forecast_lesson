@@ -13,10 +13,8 @@ def crps_ensemble(fcst,obs):
 
     Returns
     -------
-    mean_crps : float - mean CRPS along the N forecast/observation pairs
-    rel : float - Reliability
-    res : float - Resolution
-    unc : float - Uncertainty
+    df_crps: pd.DataFrame['mean CRPS' (float), 'Reliability' (float),
+                          'Resolution' (float), 'Uncertainty' (float)]
     crps : DataFrame (N,1), Individual CRPS values
     """
 
@@ -70,4 +68,9 @@ def crps_ensemble(fcst,obs):
 
     res = unc - crps_pot # Resolution
 
-    return mean_crps, rel, res, unc, crps
+    df_crps = pd.DataFrame({'Mean CRPS': [mean_crps],
+                            'Reliability': [rel],
+                            'Resolution': [res],
+                            'Uncertainty': [unc]})
+
+    return df_crps, crps
