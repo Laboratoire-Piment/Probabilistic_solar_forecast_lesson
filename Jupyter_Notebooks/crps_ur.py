@@ -115,13 +115,14 @@ def Brier_Score(fcst,obs,tau,xq):
         s = np.sort(np.append(fcst[i,:], xq)) # Sort forecast and threshold
         idx = np.searchsorted(s, xq)
         
-        if idx == 0: yq = 0.05
-        elif idx == m+1: yq = 0.95
-        else: yq = (tau[idx-1] + tau[idx])/2
+        # if idx == 0: yq = 0.05
+        # elif idx == m+1: yq = 0.95
+        # else: yq = (tau[idx-1] + tau[idx])/2
 
         if obs[i] <= xq: ct[idx,0] = ct[idx,0] + 1 # Event occured
         else: ct[idx,1] = ct[idx,1] +1  # Event not occured
-
+    
+    yq = 0.5
     pyi= np.sum(ct,axis=1)/n # marginal probabilities of event
     zibar=ct[:,0]/np.sum(ct,axis=1)
     zibar = np.where(np.isnan(zibar) , 0.0, zibar)
@@ -163,7 +164,7 @@ def crps_quantile_forecast(fcst,tau,obs,nb_thresh):
 
     min_obs = obs.min()
     max_obs = obs.max()
-    thresh = np.linspace(min_obs, max_obs-1, nb_thresh)
+    thresh = np.linspace(min_obs, max_obs, nb_thresh)
 
     bs = np.empty([nb_thresh])
     bs_rel = np.empty([nb_thresh])
