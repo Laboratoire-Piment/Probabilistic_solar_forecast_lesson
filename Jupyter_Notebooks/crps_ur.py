@@ -144,7 +144,7 @@ def crps_quantile_forecast(fcst,tau,obs,nb_thresh):
     fcst: DataFrame (N, M) - Quantile forecasts (N cases, M quantiles)
     tau: DataFrame(M) - Probability level of the quantiles (between 0 and 1)
     obs: DataFrame (N,1) - Observations
-    nb_thresh: int - Number of thresholds used to divide the observation space (between min(obs) and max(obs))
+    nb_thresh: int - Number of thresholds xq used to divide the observation space (between min(obs) and max(obs))
 
     Returns
     -------
@@ -157,9 +157,13 @@ def crps_quantile_forecast(fcst,tau,obs,nb_thresh):
     Lauret, P., David, M., Pinson, P., 2019. Verification of solar irradiance probabilistic forecasts. Solar Energy 194, 254?271. https://doi.org/10.1016/j.solener.2019.10.04
     """
 
-    min_obs = np.min(obs)
-    max_obs = np.max(obs)
-    thresh = np.linspace(min_obs, max_obs, nb_thresh)
+    fcst = np.asarray(fcst)
+    obs = np.asarray(obs)
+    tau = np.asarray(tau)
+
+    min_obs = obs.min()
+    max_obs = obs.max()
+    thresh = np.linspace(min_obs, max_obs-1, nb_thresh)
 
     bs = np.empty([nb_thresh])
     bs_rel = np.empty([nb_thresh])
