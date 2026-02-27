@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import warnings
+warnings.simplefilter("ignore")
 
 def crps_ensemble(fcst,obs):
     """
@@ -85,7 +87,7 @@ def Brier_Score(fcst,obs,tau,xq):
     ----------
         fcst: numpy array of N forecats x M quantiles
         obs: numpy array of N observations
-        tau: numpy array with probability level of the quantiles (between 0 and 1)
+        tau: numpy array of M probability level of the quantiles (between 0 and 1)
         xq: threshold
     
     Return
@@ -115,14 +117,14 @@ def Brier_Score(fcst,obs,tau,xq):
         s = np.sort(np.append(fcst[i,:], xq)) # Sort forecast and threshold
         idx = np.searchsorted(s, xq)
         
-        # if idx == 0: yq = 0.05
-        # elif idx == m+1: yq = 0.95
-        # else: yq = (tau[idx-1] + tau[idx])/2
+        if idx == 0: yq = 0.05
+        elif idx == m: yq = 0.95
+        else: yq = (tau[idx-1] + tau[idx])/2
 
         if obs[i] <= xq: ct[idx,0] = ct[idx,0] + 1 # Event occured
-        else: ct[idx,1] = ct[idx,1] +1  # Event not occured
+        else: ct[idx,1] = ct[idx,1] + 1  # Event not occured
     
-    yq = 0.5
+    # yq = 0.5
     pyi= np.sum(ct,axis=1)/n # marginal probabilities of event
     zibar=ct[:,0]/np.sum(ct,axis=1)
     zibar = np.where(np.isnan(zibar) , 0.0, zibar)
@@ -136,7 +138,7 @@ def Brier_Score(fcst,obs,tau,xq):
 
     return bs, bs_rel, bs_res, bs_unc
 
-def crps_quantile_forecast(fcst,tau,obs,nb_thresh):
+def crps_quantile_forecast(df_fcst,df_tau,df_obs,nb_thresh):
     """
     Compute the CRPS and its decomposition CRPS = REL - RES + UNC using the integartion of the Brier Score
 
@@ -158,13 +160,13 @@ def crps_quantile_forecast(fcst,tau,obs,nb_thresh):
     Lauret, P., David, M., Pinson, P., 2019. Verification of solar irradiance probabilistic forecasts. Solar Energy 194, 254?271. https://doi.org/10.1016/j.solener.2019.10.04
     """
 
-    fcst = np.asarray(fcst)
-    obs = np.asarray(obs)
-    tau = np.asarray(tau)
+    fcst = np.asarray(df_fcst)
+    obs = np.asarray(df_obs)
+    tau = np.asarray(df_tau)
 
     min_obs = obs.min()
     max_obs = obs.max()
-    thresh = np.linspace(min_obs, max_obs, nb_thresh)
+    thresh = np.linspace(min_obs, max_obs-1, nb_thresh)
 
     bs = np.empty([nb_thresh])
     bs_rel = np.empty([nb_thresh])
